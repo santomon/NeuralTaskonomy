@@ -15,7 +15,7 @@ print(device)
 def get_features(subj, model, layer=None, dim=None, dataset="", br_subset_idx=None, indoor_only=False):
     print("Getting features for {}{}, for subject {}".format(model, layer, subj))
 
-    with open("../BOLD5000/CSI0{}_stim_lists.txt".format(subj)) as f:
+    with open("../data/ROIs/CSI0{}_stim_lists.txt".format(subj)) as f:
         sl = f.readlines()
     stim_list = [item.strip("\n") for item in sl]
 

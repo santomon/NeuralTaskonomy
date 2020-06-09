@@ -1,5 +1,6 @@
 # Project #
 ###########
+some_virtual_env/
 venv/
 cooccur/
 features/

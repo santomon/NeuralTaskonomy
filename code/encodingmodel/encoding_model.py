@@ -20,7 +20,7 @@ from scipy.stats import pearsonr
 from util.util import *
 from util.model_config import *
 from encodingmodel.ridge import RidgeCVEstimator
-from encodingmodel.stacking import stack
+# from encodingmodel.stacking import stack    # does this even exist?
 
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
