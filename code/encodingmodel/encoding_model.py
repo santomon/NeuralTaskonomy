@@ -90,6 +90,9 @@ def ridge_cv(
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.15, random_state=fix_testing_state
         )
+        print("train_test_split complete")
+    del X, y
+    print("freed X and y")
 
     if pca:
         print("Running PCA...")
@@ -98,9 +101,12 @@ def ridge_cv(
         X_test = pca.transform(X_test)
         print("PCA Done.")
 
-    X_train = torch.from_numpy(X_train).to(dtype=torch.float64).to(device)
-    y_train = torch.from_numpy(y_train).to(dtype=torch.float64).to(device)
-    X_test = torch.from_numpy(X_test).to(dtype=torch.float64).to(device)
+    X_train = torch.from_numpy(X_train).to(dtype=torch.float16).to(device)
+    print("X_train generated")
+    y_train = torch.from_numpy(y_train).to(dtype=torch.float32).to(device)
+    print("y_train generated")
+    X_test = torch.from_numpy(X_test).to(dtype=torch.float16).to(device)
+    print("X_test generated")
 
     # model selection
     if split_by_runs:
@@ -129,8 +135,10 @@ def ridge_cv(
             test_fold[tr_index] = -1
             kfold = PredefinedSplit(test_fold)
             assert kfold.get_n_splits() == 1
+            print("kfold, and ShuffleSplit complete")
 
     clf = RidgeCVEstimator(alphas, kfold, scoring, scale_X=False)
+    print("RidgeCVEstimator class generated")
 
     print("Fitting ridge models...")
     if split_by_runs:

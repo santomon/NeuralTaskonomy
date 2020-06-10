@@ -158,19 +158,19 @@ if __name__ == "__main__":
         # Load ROI data
         if args.TR == "avg":
             br_data = [
-                loadmat("../BOLD5000/CSI{}_ROIs_TR{}.mat".format(args.subj, tr))
+                loadmat("../data/ROIs/CSI{}_ROIs_TR{}.mat".format(args.subj, tr))
                 for tr in [3, 4]
             ]
 
         elif args.TR == "avg234":
             br_data = [
-                loadmat("../BOLD5000/CSI{}_ROIs_TR{}.mat".format(args.subj, tr))
+                loadmat("../data/ROIs/CSI{}_ROIs_TR{}.mat".format(args.subj, tr))
                 for tr in [2, 3, 4]
             ]
 
         else:
             br_data = loadmat(
-                "../BOLD5000/CSI{}_ROIs_TR{}.mat".format(args.subj, args.TR)
+                "../data/ROIs/CSI{}_ROIs_TR{}.mat".format(args.subj, args.TR)
             )
 
     # Load feature spaces
