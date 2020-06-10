@@ -101,11 +101,11 @@ def ridge_cv(
         X_test = pca.transform(X_test)
         print("PCA Done.")
 
-    X_train = torch.from_numpy(X_train).to(dtype=torch.float16).to(device)
+    X_train = torch.from_numpy(X_train).to(dtype=torch.float32).to(device)
     print("X_train generated")
     y_train = torch.from_numpy(y_train).to(dtype=torch.float32).to(device)
     print("y_train generated")
-    X_test = torch.from_numpy(X_test).to(dtype=torch.float16).to(device)
+    X_test = torch.from_numpy(X_test).to(dtype=torch.float32).to(device)
     print("X_test generated")
 
     # model selection
