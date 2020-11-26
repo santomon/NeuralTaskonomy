@@ -63,7 +63,7 @@ def ridge_cv(
         cv=False,
         fix_testing=False,
         permute_y=False,
-        repeat=1000
+        repeat=5000""
 ):
     # fix_tsesting can be True (42), False, and a seed
     if fix_testing is True:
