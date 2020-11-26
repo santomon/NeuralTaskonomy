@@ -63,6 +63,7 @@ def ridge_cv(
         cv=False,
         fix_testing=False,
         permute_y=False,
+        repeat=1000
 ):
     # fix_tsesting can be True (42), False, and a seed
     if fix_testing is True:
@@ -163,7 +164,6 @@ def ridge_cv(
 
     else:  # permutation testings
         print("running permutation test (permutating test labels 5000 times).")
-        repeat = 5000
         corrs_dist = list()
         label_idx = np.arange(y_test.shape[0])
         for _ in tqdm(range(repeat)):
