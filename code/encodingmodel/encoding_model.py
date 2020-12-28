@@ -97,9 +97,9 @@ def ridge_cv(
 
     if pca:
         print("Running PCA...")
-        pca = PCA()
-        X_train = pca.fit_transform(X_train.astype(np.float32))
-        X_test = pca.transform(X_test)
+        pca_ = PCA() if pca == -1 else PCA(pca)
+        X_train = pca_.fit_transform(X_train.astype(np.float32))
+        X_test = pca_.transform(X_test)
         print("PCA Done.")
 
     X_train = torch.from_numpy(X_train).to(dtype=torch.float32).to(device)
