@@ -40,12 +40,12 @@ def empirical_p(acc, dist, dim=2):
     # dist is permute times x num_voxels
     # acc is of length num_voxels
     if dim == 1:
-        return np.sum(dist >= acc) / dist.shape[0]
+        return np.sum(dist >= acc) / (dist.shape[0] + 1)
     elif dim == 2:
         assert len(acc) == dist.shape[1]
         ps = list()
         for i, r in enumerate(acc):
-            ps.append(np.sum(dist[:,i] >= r)/dist.shape[0])
+            ps.append(np.sum(dist[:,i] >= r)/ (dist.shape[0] + 1))
         return ps
 
 def extract_dataset_index(stim_list, dataset="all", rep=False, return_filename=False):
