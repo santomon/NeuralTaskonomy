@@ -241,10 +241,10 @@ def ridge_cv2(
 
                 if not os.path.isdir(component_path):
                     os.makedirs(component_path)
-                    with open(xtrain_pca_fname, "wb") as f:
-                        pickle.dump(X_train, f)
-                    with open(xtest_pca_fname, "wb") as f:
-                        pickle.dump(X_test, f)
+                with open(xtrain_pca_fname, "wb") as f:
+                    pickle.dump(X_train, f)
+                with open(xtest_pca_fname, "wb") as f:
+                    pickle.dump(X_test, f)
         else:
             print("Running PCA...")
             pca_ = PCA() if pca == -1 else PCA(pca)
