@@ -190,6 +190,7 @@ def ridge_cv2(
         permute_y=False,
         repeat=5000,
         save_components=False,
+        subj=None,
         component_path=None
 ):
     # fix_tsesting can be True (42), False, and a seed
@@ -225,9 +226,9 @@ def ridge_cv2(
     if pca:
         print("Running PCA...")
 
-        if save_components and component_path and fix_testing:
-            xtrain_pca_fname = os.path.join(component_path, "xtrain_components_fixtesting.p")
-            xtest_pca_fname = os.path.join(component_path, "xtest_components_fixtesting.p")
+        if save_components and component_path and fix_testing and subj:
+            xtrain_pca_fname = os.path.join(component_path, "xtrain_components_subj{}_fixtesting.p".format(subj))
+            xtest_pca_fname = os.path.join(component_path, "xtest_components_subj{}_fixtesting.p".format(subj))
             if os.path.isfile(xtrain_pca_fname) and os.path.isfile(xtest_pca_fname):
                 with open(xtrain_pca_fname, "rb") as f:
                     X_train = pickle.load(f)
