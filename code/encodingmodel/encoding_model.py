@@ -177,6 +177,155 @@ def ridge_cv(
         return corrs_dist, p, None
 
 
+def ridge_cv2(
+        X,
+        y,
+        split_by_runs,
+        run_group=None,
+        pca=False,
+        tol=8,
+        nfold=7,
+        cv=False,
+        fix_testing=False,
+        permute_y=False,
+        repeat=5000,
+        save_components=False,
+        component_path=None
+):
+    # fix_tsesting can be True (42), False, and a seed
+    if fix_testing is True:
+        fix_testing_state = 42
+    elif fix_testing is False:
+        fix_testing_state = None
+    else:
+        fix_testing_state = fix_testing
+
+    scoring = lambda y, yhat: -torch.nn.functional.mse_loss(yhat, y)
+
+    alphas = torch.from_numpy(
+        np.logspace(-tol, 1 / 2 * np.log10(X.shape[1]) + tol, 100)
+    )
+
+    # split train and test set
+    if split_by_runs:
+        train_index, test_index = next(
+            GroupShuffleSplit(test_size=0.15, random_state=fix_testing_state).split(X, y, run_group)
+        )
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        run_group_train = np.array(run_group)[train_index]
+    else:
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.15, random_state=fix_testing_state
+        )
+        print("train_test_split complete")
+    del X, y
+    print("freed X and y")
+
+    if pca:
+        print("Running PCA...")
+
+        if save_pca and pca_path and fix_testing:
+            xtrain_pca_fname = os.path.join(component_path, "xtrain_components_fixtesting.p")
+            xtest_pca_fname = os.path.join(component_path, "xtest_components_fixtesting.p")
+            if os.path.isfile(xtrain_pca_fname) and os.path.isfile(xtest_pca_fname):
+                with open(xtrain_pca_fname, "rb") as f:
+                    X_train = pickle.load(f)
+                with open(xtest_pca_fname, "rb") as f:
+                    X_test = pickle.load(f)
+            else:
+                pca_ = PCA() if pca == -1 else PCA(pca)
+                X_train = pca_.fit_transform(X_train.astype(np.float32))
+                X_test = pca_.transform(X_test)
+
+                if not os.path.isdir(pca_path):
+                    os.path.makedirs(pca_path)
+                    with open(xtrain_pca_fname, "wb") as f:
+                        pickle.dump(X_train, f)
+                    with open(xtest_pca_fname, "wb") as f:
+                        pickle.dump(X_test, f)
+        else:
+            pca_ = PCA() if pca == -1 else PCA(pca)
+            X_train = pca_.fit_transform(X_train.astype(np.float32))
+            X_test = pca_.transform(X_test)
+
+        print("PCA Done.")
+
+    X_train = torch.from_numpy(X_train).to(dtype=torch.float32).to(device)
+    print("X_train generated")
+    y_train = torch.from_numpy(y_train).to(dtype=torch.float32).to(device)
+    print("y_train generated")
+    X_test = torch.from_numpy(X_test).to(dtype=torch.float32).to(device)
+    print("X_test generated")
+
+    # model selection
+    if split_by_runs:
+        if cv:
+            kfold = GroupKFold(n_splits=nfold)
+        else:
+            tr_index, _ = next(
+                GroupShuffleSplit(n_splits=nfold).split(
+                    X_train, y_train, run_group_train
+                )
+            )
+            test_fold = np.zeros(X_train.shape[0])
+            test_fold[tr_index] = -1
+            kfold = PredefinedSplit(test_fold)
+            assert kfold.get_n_splits() == 1
+
+    else:
+        if cv:
+            kfold = KFold(n_splits=nfold)
+        else:
+            tr_index, _ = next(
+                ShuffleSplit(test_size=0.15).split(X_train, y_train)  # split training and testing
+            )
+            # set predefined train and validation split
+            test_fold = np.zeros(X_train.shape[0])
+            test_fold[tr_index] = -1
+            kfold = PredefinedSplit(test_fold)
+            assert kfold.get_n_splits() == 1
+            print("kfold, and ShuffleSplit complete")
+
+    clf = RidgeCVEstimator(alphas, kfold, scoring, scale_X=False)
+    print("RidgeCVEstimator class generated")
+
+    print("Fitting ridge models...")
+    if split_by_runs:
+        clf.fit(X_train, y_train, groups=run_group_train)
+    else:
+        clf.fit(X_train, y_train)
+
+    print("Making predictions using ridge models...")
+    yhat = clf.predict(X_test).cpu().numpy()
+    rsqs = [r2_score(y_test[:, i], yhat[:, i]) for i in range(y_test.shape[1])]
+    corrs = [pearsonr(y_test[:, i], yhat[:, i]) for i in range(y_test.shape[1])]
+
+    if not permute_y:
+        return (
+            corrs,
+            rsqs,
+            clf.mean_cv_scores.cpu().numpy(),
+            clf.best_l_scores.cpu().numpy(),
+            clf.best_l_idxs.cpu().numpy(),
+            [yhat, y_test],
+        )
+
+    else:  # permutation testings
+        print("running permutation test (permutating test labels 5000 times).")
+        corrs_dist = list()
+        label_idx = np.arange(y_test.shape[0])
+        for _ in tqdm(range(repeat)):
+            np.random.shuffle(label_idx)
+            y_test_perm = y_test[label_idx, :]
+            perm_corrs = pearson_corr(y_test_perm, yhat, rowvar=False)
+            corrs_dist.append(perm_corrs)
+        corr_only = [r[0] for r in corrs]
+        p = empirical_p(corr_only, np.array(corrs_dist))
+        assert len(p) == y_test.shape[1]
+        return corrs_dist, p, None
+
+
 def fit_encoding_model(
         X,
         br,
