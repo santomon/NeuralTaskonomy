@@ -224,17 +224,17 @@ def ridge_cv2(
     print("freed X and y")
 
     if pca:
-        print("Running PCA...")
-
         if save_components and component_path and fix_testing and subj:
             xtrain_pca_fname = os.path.join(component_path, "xtrain_components_subj{}_fixtesting.p".format(subj))
             xtest_pca_fname = os.path.join(component_path, "xtest_components_subj{}_fixtesting.p".format(subj))
             if os.path.isfile(xtrain_pca_fname) and os.path.isfile(xtest_pca_fname):
+                print("Loading PCA...")
                 with open(xtrain_pca_fname, "rb") as f:
                     X_train = pickle.load(f)
                 with open(xtest_pca_fname, "rb") as f:
                     X_test = pickle.load(f)
             else:
+                print("Running PCA with saving...")
                 pca_ = PCA() if pca == -1 else PCA(pca)
                 X_train = pca_.fit_transform(X_train.astype(np.float32))
                 X_test = pca_.transform(X_test)
@@ -246,6 +246,7 @@ def ridge_cv2(
                     with open(xtest_pca_fname, "wb") as f:
                         pickle.dump(X_test, f)
         else:
+            print("Running PCA...")
             pca_ = PCA() if pca == -1 else PCA(pca)
             X_train = pca_.fit_transform(X_train.astype(np.float32))
             X_test = pca_.transform(X_test)
