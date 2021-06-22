@@ -225,7 +225,7 @@ def ridge_cv2(
     if pca:
         print("Running PCA...")
 
-        if save_pca and pca_path and fix_testing:
+        if save_components and pca_path and fix_testing:
             xtrain_pca_fname = os.path.join(component_path, "xtrain_components_fixtesting.p")
             xtest_pca_fname = os.path.join(component_path, "xtest_components_fixtesting.p")
             if os.path.isfile(xtrain_pca_fname) and os.path.isfile(xtest_pca_fname):
