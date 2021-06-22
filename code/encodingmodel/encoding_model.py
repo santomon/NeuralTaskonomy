@@ -239,7 +239,7 @@ def ridge_cv2(
                 X_test = pca_.transform(X_test)
 
                 if not os.path.isdir(component_path):
-                    os.path.makedirs(component_path)
+                    os.makedirs(component_path)
                     with open(xtrain_pca_fname, "wb") as f:
                         pickle.dump(X_train, f)
                     with open(xtest_pca_fname, "wb") as f:
